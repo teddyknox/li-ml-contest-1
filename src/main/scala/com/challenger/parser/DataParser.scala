@@ -1,8 +1,8 @@
 package com.challenger.parser
 
 import com.challenger.loader.DataLoader
-import com.challenger.model._
-import com.challenger.model.enums._
+import com.challenger.data._
+import com.challenger.data.enums._
 
 trait DataParser {
 

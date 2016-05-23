@@ -1,4 +1,4 @@
-package com.challenger.model.enums
+package com.challenger.data.enums
 
 trait EnumLike[T] {
 

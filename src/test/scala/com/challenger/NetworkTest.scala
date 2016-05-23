@@ -1,5 +1,6 @@
 package com.challenger
 
+import com.challenger.model.Network
 import org.scalatest._
 
 import scala.collection.mutable.ArrayBuffer

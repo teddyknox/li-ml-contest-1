@@ -1,4 +1,4 @@
-package com.challenger.model.enums
+package com.challenger.data.enums
 
 sealed abstract class WorkClass(positiveIndex: Int) extends NonNumericFeature(8, positiveIndex)
 

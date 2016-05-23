@@ -1,4 +1,4 @@
-package com.challenger.model.enums
+package com.challenger.data.enums
 
 sealed abstract class Race(positiveIndex: Int) extends NonNumericFeature(5, positiveIndex)
 

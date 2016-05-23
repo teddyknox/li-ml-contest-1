@@ -1,6 +1,6 @@
 package com.challenger
 
-import com.challenger.model.Features
+import com.challenger.data.Features
 
 object Driver extends App {
   private val BatchSize = 30

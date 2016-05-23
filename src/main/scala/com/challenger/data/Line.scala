@@ -1,6 +1,6 @@
-package com.challenger.model
+package com.challenger.data
 
-import com.challenger.model.enums._
+import com.challenger.data.enums._
 
 trait Line {
   val age: Int

@@ -1,6 +1,6 @@
 package com.challenger.loader
 
-import com.challenger.model.{TestSetLine, TrainingSetLine}
+import com.challenger.data.{TestSetLine, TrainingSetLine}
 import com.challenger.parser.DataParser
 
 import scala.io.Source

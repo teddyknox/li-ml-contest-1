@@ -1,4 +1,4 @@
-package com.challenger.model.enums
+package com.challenger.data.enums
 
 sealed abstract class NativeCountry(positiveIndex: Int) extends NonNumericFeature(41, positiveIndex)
 

@@ -1,4 +1,4 @@
-package com.challenger.model.enums
+package com.challenger.data.enums
 
 sealed abstract class MaritalStatus(positiveIndex: Int) extends NonNumericFeature(7, positiveIndex)
 

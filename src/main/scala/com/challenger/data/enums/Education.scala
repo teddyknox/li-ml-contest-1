@@ -1,9 +1,8 @@
-package com.challenger.model.enums
+package com.challenger.data.enums
 
 sealed abstract class Education(positiveIndex: Int) extends NonNumericFeature(16, positiveIndex)
 
 object Education extends EnumLike[Education] {
-
   case object Bachelors extends Education(0)
   case object `Some-college` extends Education(1)
   case object `11th` extends Education(2)
