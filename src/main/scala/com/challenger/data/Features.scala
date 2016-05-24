@@ -1,6 +1,6 @@
 package com.challenger.data
 
-import scala.collection.mutable.ArrayBuffer
+import breeze.linalg.{Vector => BreezeVector}
 
 /**
   * 0	age
@@ -148,21 +148,21 @@ case class Features(
   hoursPerWeek: Double,
   nativeCountry: Seq[Double]) {
 
-  def vector: ArrayBuffer[Double] = {
-    val seq = Seq(age) ++
+  def vector: BreezeVector[Double] = {
+    val arr = Array(age) ++
       workClass ++
-      Seq(sampleWeight) ++
+      Array(sampleWeight) ++
       education ++
-      Seq(educationNum) ++
+      Array(educationNum) ++
       maritalStatus ++
       occupation ++
       relationship ++
       race ++
-      Seq(sex) ++
-      Seq(capitalGain) ++
-      Seq(capitalLoss) ++
-      Seq(hoursPerWeek) ++
+      Array(sex) ++
+      Array(capitalGain) ++
+      Array(capitalLoss) ++
+      Array(hoursPerWeek) ++
       nativeCountry
-    seq.to[ArrayBuffer[Double]]
+    BreezeVector(arr)
   }
 }

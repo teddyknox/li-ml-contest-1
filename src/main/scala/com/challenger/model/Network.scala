@@ -6,7 +6,7 @@ import scala.collection.mutable.ArrayBuffer
 
 object Network {
 
-  val layers: Seq[Layer]
+//  val layers: Seq[Layer]
 
   def newNetwork(): Seq[Layer] = {
     Seq(
@@ -20,10 +20,10 @@ object Network {
 
 class Network(layers: Seq[Layer]) {
 
-  def forward(input: ArrayBuffer[Double]): ArrayBuffer[Double] = {
-    layers foldLeft(input) { (intermediates, layer) =>
-      layer.forward(intermediates)
-    }
-  }
+//  def forward(input: ArrayBuffer[Double]): ArrayBuffer[Double] = {
+//    layers foldLeft(input) { (intermediates, layer) =>
+//      layer.forward(intermediates)
+//    }
+//  }
 
 }

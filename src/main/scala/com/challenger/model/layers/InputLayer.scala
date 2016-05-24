@@ -1,12 +1,12 @@
 package com.challenger.model.layers
 
-import scala.collection.mutable.ArrayBuffer
+import breeze.linalg.Vector
 
 class InputLayer(inputSize: Int) extends Layer {
 
-  def forward(inputs: ArrayBuffer[Double]): ArrayBuffer[Double] = {
-
+  def forward(inputs: Vector[Double]): Vector[Double] = {
+    null
   }
 
-  def backward(losses: ArrayBuffer[Double]): ArrayBuffer[Double] = ArrayBuffer()
+  def backward(losses: Vector[Double]): Vector[Double] = null
 }

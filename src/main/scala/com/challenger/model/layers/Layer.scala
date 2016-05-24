@@ -1,8 +1,8 @@
 package com.challenger.model.layers
 
-import scala.collection.mutable.ArrayBuffer
+import breeze.linalg.Vector
 
 trait Layer {
-  def forward(inputs: ArrayBuffer[Double]): ArrayBuffer[Double]
-  def backward(losses: ArrayBuffer[Double]): ArrayBuffer[Double]
+  def forward(inputs: Vector[Double]): Vector[Double]
+  def backward(losses: Vector[Double]): Vector[Double]
 }
