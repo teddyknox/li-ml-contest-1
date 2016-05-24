@@ -35,7 +35,7 @@ class Network(
   private val outputSizes = hiddenLayerSizes :+ outputLayerSize
 
   val layers = inputSizes zip outputSizes map { case (input, output) =>
-    FullyConnectedLayer(input, output, activationFunction, alpha, lambda)
+    FullyConnectedLayer(input, output, activationFunction, alpha, lambda, trainingSet.size)
   }
 
   def initialize(): Unit = {

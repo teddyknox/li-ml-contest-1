@@ -12,8 +12,9 @@ object FullyConnectedLayer {
       biases: DenseVector[Double],
       activationFunction: DifferentiableFunction[Double, Double],
       alpha: Double,
-      lambda: Double) = {
-    new FullyConnectedLayer(weights, biases, activationFunction, alpha, lambda)
+      lambda: Double,
+      m: Int) = {
+    new FullyConnectedLayer(weights, biases, activationFunction, alpha, lambda, m)
   }
 
   def apply(
@@ -21,7 +22,8 @@ object FullyConnectedLayer {
       numOutputs: Int,
       activationFunction: DifferentiableFunction[Double, Double],
       alpha: Double,
-      lambda: Double) = {
+      lambda: Double,
+      m: Int) = {
     new FullyConnectedLayer(
       DenseMatrix.create(
         rows = numOutputs,
@@ -30,7 +32,8 @@ object FullyConnectedLayer {
       DenseVector.zeros[Double](numOutputs),
       activationFunction,
       alpha,
-      lambda)
+      lambda,
+      m)
   }
 }
 
@@ -39,10 +42,14 @@ class FullyConnectedLayer(
     biases: DenseVector[Double],
     activationFunction: DifferentiableFunction[Double, Double],
     alpha: Double,
-    lambda: Double) extends Layer {
+    lambda: Double,
+    m: Int) extends Layer {
 
   private[this] var _activations = Option.empty[DenseVector[Double]]
   private[this] var _activationPrimes = Option.empty[DenseVector[Double]]
+
+  private val weightGrad = DenseMatrix.zeros[Double](rows = weightsT.rows, cols = weightsT.cols)
+  private val biasGrad = DenseVector.zeros[Double](biases.length)
 
   def forward(inputs: DenseVector[Double]): DenseVector[Double] = {
     val z = (weightsT * inputs) + biases
@@ -51,17 +58,36 @@ class FullyConnectedLayer(
     _activations.get
   }
 
+  /**
+    * Takes in the gradient from previous layer, computes the gradient for this layer and return it.
+    * This method will also update the weightsT for this layer for the next iteration of forward propagation.
+    *
+    * @param losses These are losses from the previous layer. Previous layer = layer 1 CLOSER to the output layer
+    * @return gradient/losses for this layer.
+    */
   def backward(losses: DenseVector[Double]): DenseVector[Double] = {
 
     if (_activations.isEmpty || _activationPrimes.isEmpty) {
       sys.error("cannot run backward propagation without forward propagation being run for this iteration/layer.")
     }
 
+    // compute loss for this layer. this value will be returned so that next layer of neurons can continue to backward propagate.
     val delta = (weightsT.t * losses) :* _activationPrimes.get
 
-    // TODO: regularization adjustments
+    // partial derivatives to update the gradient
+    val gradientDeltas = losses * _activations.get.t
+    val biasDeltas = losses
 
+    // update the gradients
+    weightGrad += gradientDeltas
+    biasGrad += biasDeltas
 
-    null
+    // update the weights based on gradient and regularization
+    weightsT -= alpha * ((weightGrad / m.toDouble) + (weightsT * lambda))
+
+    // update the biases based on gradient
+    biases -= alpha * (biasGrad / m.toDouble)
+
+    delta
   }
 }
