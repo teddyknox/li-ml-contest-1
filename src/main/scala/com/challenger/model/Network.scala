@@ -1,29 +1,19 @@
 package com.challenger.model
 
-import com.challenger.model.layers.{FullyConnectedLayer, InputLayer, Layer}
-
-import scala.collection.mutable.ArrayBuffer
+import breeze.numerics.sigmoid
+import com.challenger.model.layers.FullyConnectedLayer
 
 object Network {
 
-//  val layers: Seq[Layer]
-
-  def newNetwork(): Seq[Layer] = {
-    Seq(
-      new FullyConnectedLayer(103, 40),
-      new FullyConnectedLayer(40, 40),
-      new FullyConnectedLayer(40, 1))
+  def apply(
+      layerSizes: Seq[Int] = Seq(103, 40, 40, 1),
+      activationFunction: Function[Double, Double] = sigmoid.sigmoidImplDouble.apply): Network = {
+    new Network(layerSizes, activationFunction)
   }
-
-
 }
 
-class Network(layers: Seq[Layer]) {
-
-//  def forward(input: ArrayBuffer[Double]): ArrayBuffer[Double] = {
-//    layers foldLeft(input) { (intermediates, layer) =>
-//      layer.forward(intermediates)
-//    }
-//  }
-
+class Network(layerSizes: Seq[Int], activationFunction: Function[Double, Double]) {
+  val layers = layerSizes.dropRight(1)
+    .zip { layerSizes.drop(1) }
+    .map { case (inputs, outputs) => FullyConnectedLayer(inputs, outputs) }
 }
