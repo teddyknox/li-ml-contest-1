@@ -1,19 +1,37 @@
 package com.challenger.model
 
-import breeze.numerics.sigmoid
+import com.challenger.data.TrainingSetLine
 import com.challenger.model.layers.FullyConnectedLayer
 
 object Network {
 
+  /**
+    * Linear rectifier (ReLU) activation function applied
+    */
+  def relu(input: Double): Double = math.max(0, input)
+
   def apply(
-      layerSizes: Seq[Int] = Seq(103, 40, 40, 1),
-      activationFunction: Function[Double, Double] = sigmoid.sigmoidImplDouble.apply): Network = {
-    new Network(layerSizes, activationFunction)
+      trainingSet: Seq[TrainingSetLine],
+      hiddenLayerSizes: Seq[Int],
+      outputLayerSize: Int = 1,
+      activationFunction: Function[Double, Double] = relu): Network = {
+    new Network(trainingSet, hiddenLayerSizes, outputLayerSize, activationFunction)
   }
 }
 
-class Network(layerSizes: Seq[Int], activationFunction: Function[Double, Double]) {
-  val layers = layerSizes.dropRight(1)
-    .zip { layerSizes.drop(1) }
-    .map { case (inputs, outputs) => FullyConnectedLayer(inputs, outputs) }
+class Network(
+    trainingSet: Seq[TrainingSetLine],
+    hiddenLayerSizes: Seq[Int],
+    outputLayerSize: Int,
+    activationFunction: Function[Double, Double]) {
+
+  private val featureVectors = trainingSet map { _.features.vector }
+
+  private val inputSizes = featureVectors.head.size +: hiddenLayerSizes
+  private val outputSizes = hiddenLayerSizes :+ outputLayerSize
+
+  val layers = inputSizes zip outputSizes map { case (input, output) => FullyConnectedLayer(input, output, activationFunction) }
+
+  def initialize(): Unit = {
+  }
 }
