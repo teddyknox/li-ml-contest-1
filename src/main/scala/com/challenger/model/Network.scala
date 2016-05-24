@@ -17,6 +17,14 @@ object Network {
       activationFunction: Function[Double, Double] = relu): Network = {
     new Network(trainingSet, hiddenLayerSizes, outputLayerSize, activationFunction)
   }
+
+  def apply(
+      trainingSet: Seq[TrainingSetLine],
+      hiddenLayerSize: Int,
+      outputLayerSize: Int = 1,
+      activationFunction: Function[Double, Double] = relu): Network = {
+    new Network(trainingSet, Seq(hiddenLayerSize), outputLayerSize, activationFunction)
+  }
 }
 
 class Network(
