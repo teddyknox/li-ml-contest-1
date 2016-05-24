@@ -1,8 +1,8 @@
 package com.challenger.model.layers
 
-import breeze.linalg.Vector
+import breeze.linalg.DenseVector
 
 trait Layer {
-  def forward(inputs: Vector[Double]): Vector[Double]
-  def backward(losses: Vector[Double]): Vector[Double]
+  def forward(inputs: DenseVector[Double]): DenseVector[Double]
+  def backward(losses: DenseVector[Double]): DenseVector[Double]
 }
