@@ -28,7 +28,7 @@ object FullyConnectedLayer {
       DenseMatrix.create(
         rows = numInputs,
         cols = numOutputs,
-        data = Array.fill(numInputs * numOutputs) { Random.nextDouble() }),
+        data = Array.fill(numInputs * numOutputs) { Random.nextDouble() / 100.0 }),
       DenseVector.zeros[Double](numOutputs),
       activationFunction,
       alpha,
