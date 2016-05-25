@@ -63,8 +63,16 @@ class FullyConnectedLayer(
   private val weightGrad = DenseMatrix.zeros[Double](rows = weights.rows, cols = weights.cols)
   private val biasGrad = DenseVector.zeros[Double](biases.length)
 
-  def forward(inputs: DenseVector[Double]): DenseVector[Double] = {
-    val z = (weights * inputs) + biases
+  /**
+    * forward propagate without updating activations.
+    * this will be used during classification instead of training.
+    */
+  override def compute(inputs: DenseVector[Double]): DenseVector[Double] = {
+    (weights * inputs) + biases
+  }
+
+  override def forward(inputs: DenseVector[Double]): DenseVector[Double] = {
+    val z = compute(inputs)
     _activations = Some(z map activationFunction.apply)
     _activationPrimes = Some(z map activationFunction.prime)
     _activations.get
@@ -77,7 +85,7 @@ class FullyConnectedLayer(
     * @param losses These are losses from the previous layer. Previous layer = layer 1 CLOSER to the output layer
     * @return gradient/losses for this layer.
     */
-  def backward(losses: DenseVector[Double]): DenseVector[Double] = {
+  override def backward(losses: DenseVector[Double]): DenseVector[Double] = {
 
     if (_activations.isEmpty || _activationPrimes.isEmpty) {
       sys.error("cannot run backward propagation without forward propagation being run for this iteration/layer.")
