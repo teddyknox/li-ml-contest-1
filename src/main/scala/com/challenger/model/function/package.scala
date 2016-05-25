@@ -23,4 +23,13 @@ package object function {
       1 - (t * t)
     }
   }
+
+  def getAvailableFunction(name: String): DifferentiableFunction[Double, Double] = {
+    name match {
+      case "relu" => relu
+      case "sigmoid" => sigmoid
+      case "tanh" => tanh
+      case _ => sys.error("invalid function name")
+    }
+  }
 }

@@ -1,6 +1,6 @@
 package com.challenger.data
 
-import breeze.linalg.{Vector => BreezeVector}
+import breeze.linalg.DenseVector
 
 /**
   * 0	age
@@ -148,7 +148,7 @@ case class Features(
   hoursPerWeek: Double,
   nativeCountry: Seq[Double]) {
 
-  def vector: BreezeVector[Double] = {
+  def vector: DenseVector[Double] = {
     val arr = Array(age) ++
       workClass ++
       Array(sampleWeight) ++
@@ -163,6 +163,6 @@ case class Features(
       Array(capitalLoss) ++
       Array(hoursPerWeek) ++
       nativeCountry
-    BreezeVector(arr)
+    DenseVector(arr)
   }
 }

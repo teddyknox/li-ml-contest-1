@@ -90,4 +90,12 @@ class FullyConnectedLayer(
 
     delta
   }
+
+  def activations = _activations getOrElse {
+    sys.error("activations are not yet computed for this layer")
+  }
+
+  def activationPrimes = _activationPrimes getOrElse {
+    sys.error("activation' are not yet computed for this layer")
+  }
 }

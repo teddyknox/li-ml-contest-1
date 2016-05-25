@@ -10,4 +10,9 @@ object Label extends EnumLike[Label] {
   override val values = Seq(
     `<=50K`,
     `>50K`)
+
+  def get(v: Double): Label = {
+    if (v > 0.5) `>50K`
+    else `<=50K`
+  }
 }
