@@ -17,6 +17,18 @@ object FullyConnectedLayer {
     new FullyConnectedLayer(weights, biases, activationFunction, alpha, lambda, m)
   }
 
+  /**
+    * Say we have 3 features and outputs 1 label (numInputs = 3, numOutputs = 1).
+    *
+    * Weights should be [w1, w2, w3].
+    * Input should be
+    * i1
+    * i2
+    * i3
+    * since DenseVector is vertical.
+    *
+    * Therefore, weights has 1 row, 3 columns. Therefore, cols = numInputs, rows = numOutputs
+    */
   def apply(
       numInputs: Int,
       numOutputs: Int,
@@ -26,8 +38,8 @@ object FullyConnectedLayer {
       m: Int) = {
     new FullyConnectedLayer(
       DenseMatrix.create(
-        rows = numInputs,
-        cols = numOutputs,
+        rows = numOutputs,
+        cols = numInputs,
         data = Array.fill(numInputs * numOutputs) { Random.nextDouble() / 100.0 }),
       DenseVector.zeros[Double](numOutputs),
       activationFunction,
