@@ -1,12 +1,15 @@
 package com.challenger
 
 import java.io.PrintWriter
+import java.util.logging.Logger
 
 import com.challenger.loader.DataLoader._
 import com.challenger.model.Network
 import com.challenger.model.function._
 
 object Driver extends App {
+
+  val logger = Logger.getLogger(getClass.getName)
 
   val trainingPath = Option(System.getProperty("training.classpath")) getOrElse "training.tsv"
   val testPath = Option(System.getProperty("test.classpath")) getOrElse "test.tsv"
@@ -30,10 +33,13 @@ object Driver extends App {
     .map { _.toDouble }
     .getOrElse { Network.defaultLambda }
 
+  logger.info("Loading training set...")
   val trainingSet = load(trainingPath) { parseTrainingSet }
 
+  logger.info("Loading testing set...")
   val testSet = load(testPath) { parseTestSet }
 
+  logger.info("Initializing neural network...")
   val neuralNetwork = Network(
     trainingSet = trainingSet,
     hiddenLayerSizes = hiddenLayers,
@@ -42,6 +48,7 @@ object Driver extends App {
     lambda = regularizationParam,
     initializeOnStart = true)
 
+  logger.info("Classifying test set...")
   val labels = testSet map { _.features.vector } map { neuralNetwork.classify } map { _.toString }
 
   val writer = new PrintWriter(outputFilePath, "UTF-8")
