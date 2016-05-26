@@ -2,7 +2,20 @@ package com.challenger.data
 
 import breeze.linalg.DenseVector
 
+object Features {
+
+  object Maximums {
+    val age = 90                  // 17 - 90
+    val sampleWeight = 1484705    // 12,285 - 1,484,705
+    val educationNum = 16         // 1 - 16
+    val capitalGain = 99999       // 0 - 99,999
+    val capitalLoss = 4356        // 0 - 4,356
+    val hoursPerWeek = 99         // 1 - 99
+  }
+}
+
 /**
+  *
   * 0	age
   **
   * workClass
@@ -14,7 +27,9 @@ import breeze.linalg.DenseVector
      *6	State-gov
      *7	Without-pay
      *8	Never-worked.
-     *9	sampleWeight
+ **
+ *9	sampleWeight
+
  **
  *education
     *10	Bachelors
@@ -148,20 +163,27 @@ case class Features(
   hoursPerWeek: Double,
   nativeCountry: Seq[Double]) {
 
+  import Features._
+
+  /**
+    * Various values are normalized by the maximums in training set.
+    * This is because most categorical features (non-numeric) are mapped to a set of vectors that range from 0 - 1.
+    * Therefore, larger values such as age and sampleWeight are normalized to be in range of [0, 1] as well.
+    */
   def vector: DenseVector[Double] = {
-    val arr = Array(age) ++
+    val arr = Array(age / Maximums.age) ++
       workClass ++
-      Array(sampleWeight) ++
+      Array(sampleWeight / Maximums.sampleWeight) ++
       education ++
-      Array(educationNum) ++
+      Array(educationNum / Maximums.educationNum) ++
       maritalStatus ++
       occupation ++
       relationship ++
       race ++
       Array(sex) ++
-      Array(capitalGain) ++
-      Array(capitalLoss) ++
-      Array(hoursPerWeek) ++
+      Array(capitalGain / Maximums.capitalGain) ++
+      Array(capitalLoss / Maximums.capitalLoss) ++
+      Array(hoursPerWeek / Maximums.hoursPerWeek) ++
       nativeCountry
     DenseVector(arr)
   }
