@@ -7,7 +7,7 @@ import scala.io.Source
 
 object DataLoader extends DataParser {
 
-  def load[T <: Line](classpath: String)(f: String => T) = {
+  def load[T](classpath: String)(f: String => T) = {
     val source = Source.fromInputStream(getClass.getClassLoader.getResourceAsStream(classpath))
     try {
       source.getLines().to[Vector] map f

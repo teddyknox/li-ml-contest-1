@@ -3,7 +3,6 @@ package com.challenger.model
 import java.util.logging.Logger
 
 import breeze.linalg.DenseVector
-import com.challenger.data.TrainingSetLine
 import com.challenger.data.enums.Label
 import com.challenger.model.function.DifferentiableFunction
 import com.challenger.model.function.DifferentiableFunction._
@@ -18,19 +17,19 @@ object Network {
   val logger = Logger.getLogger(getClass.getName)
 
   def apply(
-      trainingSet: Seq[TrainingSetLine],
+      featureVectors: Seq[(DenseVector[Double], Label)],
       hiddenLayerSizes: Seq[Int] = Seq.empty,
       outputLayerSize: Int = 1,
       activationFunction: DifferentiableFunction[Double, Double] = relu,
       alpha: Double = defaultAlpha,
       lambda: Double = defaultLambda,
       initializeOnStart: Boolean = false): Network = {
-    new Network(trainingSet, hiddenLayerSizes, outputLayerSize, activationFunction, alpha, lambda, initializeOnStart)
+    new Network(featureVectors, hiddenLayerSizes, outputLayerSize, activationFunction, alpha, lambda, initializeOnStart)
   }
 }
 
 class Network(
-    trainingSet: Seq[TrainingSetLine],
+    featureVectors: Seq[(DenseVector[Double], Label)],
     hiddenLayerSizes: Seq[Int],
     outputLayerSize: Int,
     activationFunction: DifferentiableFunction[Double, Double],
@@ -40,13 +39,11 @@ class Network(
 
   import Network.logger
 
-  private val featureVectors = trainingSet map { line => line.features.vector -> line.label }
-
   private val inputSizes = featureVectors.head._1.size +: hiddenLayerSizes
   private val outputSizes = hiddenLayerSizes :+ outputLayerSize
 
   val layers = inputSizes zip outputSizes map { case (input, output) =>
-    FullyConnectedLayer(input, output, activationFunction, alpha, lambda, trainingSet.size)
+    FullyConnectedLayer(input, output, activationFunction, alpha, lambda, featureVectors.size)
   }
 
   if (initializeOnStart) {
