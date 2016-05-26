@@ -34,6 +34,10 @@ object Driver extends App {
     .map { _.toDouble }
     .getOrElse { Network.defaultLambda }
 
+  val epochs = Option(System.getProperty("epochs"))
+    .map { _.toInt }
+    .getOrElse { 1 }
+
   logger.info("Loading training set...")
   val trainingSet = load(trainingPath) { parseTrainingSet }
 
@@ -48,7 +52,8 @@ object Driver extends App {
     activationFunction = activationFunction,
     alpha = learningRate,
     lambda = regularizationParam,
-    initializeOnStart = true)
+    initializeOnStart = true,
+    epochs = epochs)
 
   logger.info("Classifying test set...")
   val outputs = testSet map { _.features.vector } map { neuralNetwork.classify }

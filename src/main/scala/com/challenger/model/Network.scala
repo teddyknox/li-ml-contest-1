@@ -8,6 +8,8 @@ import com.challenger.model.function.DifferentiableFunction
 import com.challenger.model.function.DifferentiableFunction._
 import com.challenger.model.layers.FullyConnectedLayer
 
+import scala.util.Random
+
 object Network {
 
   val defaultAlpha = 0.1
@@ -23,8 +25,17 @@ object Network {
       activationFunction: DifferentiableFunction[Double, Double] = relu,
       alpha: Double = defaultAlpha,
       lambda: Double = defaultLambda,
-      initializeOnStart: Boolean = false): Network = {
-    new Network(featureVectors, hiddenLayerSizes, outputLayerSize, activationFunction, alpha, lambda, initializeOnStart)
+      initializeOnStart: Boolean = false,
+      epochs: Int = 1): Network = {
+    new Network(
+      featureVectors,
+      hiddenLayerSizes,
+      outputLayerSize,
+      activationFunction,
+      alpha,
+      lambda,
+      initializeOnStart,
+      epochs)
   }
 }
 
@@ -35,7 +46,8 @@ class Network(
     activationFunction: DifferentiableFunction[Double, Double],
     alpha: Double,
     lambda: Double,
-    initializeOnStart: Boolean) {
+    initializeOnStart: Boolean,
+    epochs: Int) {
 
   import Network.logger
 
@@ -50,12 +62,16 @@ class Network(
     initialize()
   }
 
-  def initialize(): Unit = {
-    featureVectors.zipWithIndex foreach { case ((features, label), i) =>
+  def initialize(): Unit = 1 to epochs foreach { i =>
+    if (i % 10 == 0) {
+      val mse = calculateMeanSquareError(featureVectors(Random.nextInt(featureVectors.size))._1)
+      logger.info(s"At epoch #$i, mse: $mse")
+    }
+    initializeSingleEpoch()
+  }
 
-      if (i % 100 == 0) {
-        logger.info(s"training with line #$i...")
-      }
+  protected def initializeSingleEpoch(): Unit = {
+    featureVectors.zipWithIndex foreach { case ((features, label), i) =>
 
       // forward propagate and fold activation of each layer into the next one
       val output = layers.foldLeft(features) { case (activations, layer) => layer.forward(activations) }
@@ -65,11 +81,16 @@ class Network(
 
       // backward propagate and update the weights
       // the result is the "input layer" loss, which can be ignored
-      layers.reverse.foldLeft(outputLoss) { case (losses, layer) => layer.backward(losses) }
+      layers.foldRight(outputLoss) { case (layer, losses) => layer.backward(losses) }
     }
   }
 
   def classify(features: DenseVector[Double]): DenseVector[Double] = {
     layers.foldLeft(features) { case (activations, layer) => layer.forward(activations) }
+  }
+
+  def calculateMeanSquareError(features: DenseVector[Double]): Double = {
+    val output = classify(features)
+    output dot output
   }
 }

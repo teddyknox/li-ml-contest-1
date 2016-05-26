@@ -49,7 +49,8 @@ object Driver extends App {
     activationFunction = activationFunction,
     alpha = learningRate,
     lambda = regularizationParam,
-    initializeOnStart = true)
+    initializeOnStart = true,
+    epochs = 1000)
 
   logger.info("Classifying test set...")
   val outputs = 0 to 1000 map { _.toDouble } map { d => DenseVector(d) } map { neuralNetwork.classify }
