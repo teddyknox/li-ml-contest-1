@@ -5,7 +5,8 @@ import java.util.logging.Logger
 import breeze.linalg.DenseVector
 import com.challenger.data.TrainingSetLine
 import com.challenger.data.enums.Label
-import com.challenger.model.function._
+import com.challenger.model.function.DifferentiableFunction
+import com.challenger.model.function.DifferentiableFunction._
 import com.challenger.model.layers.FullyConnectedLayer
 
 object Network {
@@ -56,14 +57,14 @@ class Network(
     featureVectors.zipWithIndex foreach { case ((features, label), i) =>
 
       if (i % 100 == 0) {
-        logger.info(s"working with the training set line #$i...")
+        logger.info(s"training with line #$i...")
       }
 
       // forward propagate and fold activation of each layer into the next one
       val output = layers.foldLeft(features) { case (activations, layer) => layer.forward(activations) }
 
       // computes the output layer loss
-      val outputLoss = (output - DenseVector(label.value.toDouble)) :* layers.last.activationPrimes
+      val outputLoss = (output - DenseVector(label.value.toDouble)) :* (output map { activationFunction.primeAtY })
 
       // backward propagate and update the weights
       // the result is the "input layer" loss, which can be ignored
@@ -71,9 +72,7 @@ class Network(
     }
   }
 
-  def classify(features: DenseVector[Double]): Label = {
-    val output = layers.foldLeft(features) { case (activations, layer) => layer.forward(activations) }
-    // TODO: figure out what to do with tanh/relu
-    Label.get(output(0))
+  def classify(features: DenseVector[Double]): DenseVector[Double] = {
+    layers.foldLeft(features) { case (activations, layer) => layer.forward(activations) }
   }
 }

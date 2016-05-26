@@ -50,32 +50,26 @@ object FullyConnectedLayer {
 }
 
 class FullyConnectedLayer(
-    weights: DenseMatrix[Double],
-    biases: DenseVector[Double],
-    activationFunction: DifferentiableFunction[Double, Double],
-    alpha: Double,
-    lambda: Double,
-    m: Int) extends Layer {
+    val weights: DenseMatrix[Double],
+    val biases: DenseVector[Double],
+    val activationFunction: DifferentiableFunction[Double, Double],
+    val alpha: Double,
+    val lambda: Double,
+    val m: Int) extends Layer {
 
+  // these are the inputs for THIS layer (activations from previous layer)
   private[this] var _activations = Option.empty[DenseVector[Double]]
-  private[this] var _activationPrimes = Option.empty[DenseVector[Double]]
 
   private val weightGrad = DenseMatrix.zeros[Double](rows = weights.rows, cols = weights.cols)
   private val biasGrad = DenseVector.zeros[Double](biases.length)
 
-  /**
-    * forward propagate without updating activations.
-    * this will be used during classification instead of training.
-    */
   override def compute(inputs: DenseVector[Double]): DenseVector[Double] = {
-    (weights * inputs) + biases
+    ((weights * inputs) + biases) map { activationFunction }
   }
 
   override def forward(inputs: DenseVector[Double]): DenseVector[Double] = {
-    val z = compute(inputs)
-    _activations = Some(z map activationFunction.apply)
-    _activationPrimes = Some(z map activationFunction.prime)
-    _activations.get
+    _activations = Some(inputs)
+    compute(inputs)
   }
 
   /**
@@ -87,12 +81,12 @@ class FullyConnectedLayer(
     */
   override def backward(losses: DenseVector[Double]): DenseVector[Double] = {
 
-    if (_activations.isEmpty || _activationPrimes.isEmpty) {
+    if (_activations.isEmpty) {
       sys.error("cannot run backward propagation without forward propagation being run for this iteration/layer.")
     }
 
     // compute loss for this layer. this value will be returned so that next layer of neurons can continue to backward propagate.
-    val delta = (weights.t * losses) :* _activationPrimes.get
+    val delta = (weights.t * losses) :* (_activations.get map { activationFunction.primeAtY })
 
     // partial derivatives to update the gradient
     val gradientDeltas = losses * _activations.get.t
@@ -109,13 +103,5 @@ class FullyConnectedLayer(
     biases -= alpha * (biasGrad / m.toDouble)
 
     delta
-  }
-
-  def activations = _activations getOrElse {
-    sys.error("activations are not yet computed for this layer")
-  }
-
-  def activationPrimes = _activationPrimes getOrElse {
-    sys.error("activation' are not yet computed for this layer")
   }
 }
