@@ -9,4 +9,4 @@ libraryDependencies ++= Seq(
   "org.scalatest" % "scalatest_2.11" % "2.2.6" % Test
 )
 
-
+mainClass in (Compile, run) := Some("com.challenger.Driver")

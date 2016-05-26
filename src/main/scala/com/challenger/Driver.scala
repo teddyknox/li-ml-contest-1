@@ -2,12 +2,14 @@ package com.challenger
 
 import java.io.PrintWriter
 
-import com.challenger.loader.DataLoader
+import com.challenger.loader.DataLoader._
 import com.challenger.model.Network
 import com.challenger.model.function._
 
 object Driver extends App {
 
+  val trainingPath = Option(System.getProperty("training.classpath")) getOrElse "training.tsv"
+  val testPath = Option(System.getProperty("test.classpath")) getOrElse "test.tsv"
   val outputFilePath = Option(System.getProperty("output.path")) getOrElse sys.error("Missing required property output.path.")
 
   val hiddenLayers = Option(System.getProperty("hidden.layers"))
@@ -28,9 +30,9 @@ object Driver extends App {
     .map { _.toDouble }
     .getOrElse { Network.defaultLambda }
 
-  val trainingSet = DataLoader.loadTrainingSet()
+  val trainingSet = load(trainingPath) { parseTrainingSet }
 
-  val testSet = DataLoader.loadTestSet()
+  val testSet = load(testPath) { parseTestSet }
 
   val neuralNetwork = Network(
     trainingSet = trainingSet,
