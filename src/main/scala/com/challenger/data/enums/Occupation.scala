@@ -1,23 +1,24 @@
 package com.challenger.data.enums
 
-sealed abstract class Occupation(positiveIndex: Int) extends NonNumericFeature(14, positiveIndex)
+sealed abstract class Occupation(positiveIndex: Option[Int]) extends NonNumericFeature(14, positiveIndex)
 
 object Occupation extends EnumLike[Occupation] {
 
-  case object `Tech-support` extends Occupation(0)
-  case object `Craft-repair` extends Occupation(1)
-  case object `Other-service` extends Occupation(2)
-  case object Sales extends Occupation(3)
-  case object `Exec-managerial` extends Occupation(4)
-  case object `Prof-specialty` extends Occupation(5)
-  case object `Handlers-cleaners` extends Occupation(6)
-  case object `Machine-op-inspct` extends Occupation(7)
-  case object `Adm-clerical` extends Occupation(8)
-  case object `Farming-fishing` extends Occupation(9)
-  case object `Transport-moving` extends Occupation(10)
-  case object `Priv-house-serv` extends Occupation(11)
-  case object `Protective-serv` extends Occupation(12)
-  case object `Armed-Forces` extends Occupation(13)
+  case object `Tech-support` extends Occupation(Some(0))
+  case object `Craft-repair` extends Occupation(Some(1))
+  case object `Other-service` extends Occupation(Some(2))
+  case object Sales extends Occupation(Some(3))
+  case object `Exec-managerial` extends Occupation(Some(4))
+  case object `Prof-specialty` extends Occupation(Some(5))
+  case object `Handlers-cleaners` extends Occupation(Some(6))
+  case object `Machine-op-inspct` extends Occupation(Some(7))
+  case object `Adm-clerical` extends Occupation(Some(8))
+  case object `Farming-fishing` extends Occupation(Some(9))
+  case object `Transport-moving` extends Occupation(Some(10))
+  case object `Priv-house-serv` extends Occupation(Some(11))
+  case object `Protective-serv` extends Occupation(Some(12))
+  case object `Armed-Forces` extends Occupation(Some(13))
+  case object ? extends Occupation(None)
 
   override val values = Seq(
     `Tech-support`,
@@ -33,5 +34,6 @@ object Occupation extends EnumLike[Occupation] {
     `Transport-moving`,
     `Priv-house-serv`,
     `Protective-serv`,
-    `Armed-Forces`)
+    `Armed-Forces`,
+    ?)
 }
