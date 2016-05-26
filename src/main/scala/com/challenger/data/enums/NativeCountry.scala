@@ -44,7 +44,7 @@ object NativeCountry extends EnumLike[NativeCountry] {
   case object `Trinadad&Tobago` extends NativeCountry(Some(37))
   case object Peru extends NativeCountry(Some(38))
   case object Hong extends NativeCountry(Some(39))
-  case object `Holland-Netherlands` extends NativeCountry(Some(40))
+  case object `Holand-Netherlands` extends NativeCountry(Some(40))
   case object ? extends NativeCountry(None)
 
   override val values = Seq(
@@ -88,6 +88,6 @@ object NativeCountry extends EnumLike[NativeCountry] {
     `Trinadad&Tobago`,
     Peru,
     Hong,
-    `Holland-Netherlands`,
+    `Holand-Netherlands`,
     ?)
 }
