@@ -8,6 +8,8 @@ import com.challenger.loader.DataLoader._
 import com.challenger.model.Network
 import com.challenger.model.function._
 
+import scala.util.Random
+
 object Driver extends App {
 
   val logger = Logger.getLogger(getClass.getName)
@@ -38,31 +40,39 @@ object Driver extends App {
     .map { _.toInt }
     .getOrElse { 1 }
 
+  val batchSize = Option(System.getProperty("batch.size"))
+    .map { _.toInt }
+    .getOrElse { 30 }
+
   logger.info("Loading training set...")
   val trainingSet = load(trainingPath) { parseTrainingSet }
+  val examples = trainingSet.map({ line => line.features.vector -> line.label })
 
   logger.info("Loading testing set...")
   val testSet = load(testPath) { parseTestSet }
 
   logger.info("Initializing neural network...")
-  val featureVectors = trainingSet map { line => line.features.vector -> line.label }
   val neuralNetwork = Network(
-    featureVectors = featureVectors,
+    inputSize = examples(0)._1.length,
     hiddenLayerSizes = hiddenLayers,
     activationFunction = activationFunction,
     alpha = learningRate,
-    lambda = regularizationParam,
-    initializeOnStart = true,
-    epochs = epochs)
+    lambda = regularizationParam)
+
+  val batches = examples.grouped(batchSize).toVector
+  for (epoch <- (1 to epochs)) {
+    val mse = batches.map(neuralNetwork.updateWeights(_)).reduce(_ + _)
+    logger.info(s"Epoch #$epoch, mse: $mse")
+  }
 
   logger.info("Classifying test set...")
-  val outputs = testSet map { _.features.vector } map { neuralNetwork.classify }
-  val results = outputs map { _(0) } map { v => v + "\t" + Label.get(v) }
-
+  val predictions = testSet map { _.features.vector } map { neuralNetwork.classify } map { output =>
+    Label.get(output(0))
+  }
+  val output = "{\"guesses\":[" + predictions.map(s => "\"" + s.toString + "\"").mkString(", ") + "]}"
   val outputWriter = new PrintWriter(outputFilePath, "UTF-8")
-
   try {
-    results foreach outputWriter.println
+    outputWriter.write(output)
   } finally {
     outputWriter.close()
   }

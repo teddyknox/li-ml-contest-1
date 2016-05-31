@@ -7,16 +7,6 @@ import scala.util.Random
 
 object FullyConnectedLayer {
 
-  def apply(
-      weights: DenseMatrix[Double],
-      biases: DenseVector[Double],
-      activationFunction: DifferentiableFunction[Double, Double],
-      alpha: Double,
-      lambda: Double,
-      m: Int) = {
-    new FullyConnectedLayer(weights, biases, activationFunction, alpha, lambda, m)
-  }
-
   /**
     * Say we have 3 features and outputs 1 label (numInputs = 3, numOutputs = 1).
     *
@@ -34,18 +24,15 @@ object FullyConnectedLayer {
       numOutputs: Int,
       activationFunction: DifferentiableFunction[Double, Double],
       alpha: Double,
-      lambda: Double,
-      m: Int) = {
+      lambda: Double) = {
     new FullyConnectedLayer(
-      DenseMatrix.create(
-        rows = numOutputs,
-        cols = numInputs,
-        data = Array.fill(numInputs * numOutputs) { Random.nextDouble() / 100.0 }),
+      DenseMatrix.tabulate(numOutputs, numInputs)({ case (row, col) =>
+        Random.nextDouble() / 10.0
+      }),
       DenseVector.zeros[Double](numOutputs),
       activationFunction,
       alpha,
-      lambda,
-      m)
+      lambda)
   }
 }
 
@@ -54,14 +41,13 @@ class FullyConnectedLayer(
     val biases: DenseVector[Double],
     val activationFunction: DifferentiableFunction[Double, Double],
     val alpha: Double,
-    val lambda: Double,
-    val m: Int) extends Layer {
+    val lambda: Double) extends Layer {
 
   // these are the inputs for THIS layer (activations from previous layer)
-  private[this] var _activations = Option.empty[DenseVector[Double]]
-
-  private val weightGrad = DenseMatrix.zeros[Double](rows = weights.rows, cols = weights.cols)
-  private val biasGrad = DenseVector.zeros[Double](biases.length)
+  private var _activations = Option.empty[DenseVector[Double]]
+  private var weightDelta = DenseMatrix.zeros[Double](rows = weights.rows, cols = weights.cols)
+  private var biasDelta = DenseVector.zeros[Double](biases.length)
+  private var m = 0
 
   override def compute(inputs: DenseVector[Double]): DenseVector[Double] = {
     ((weights * inputs) + biases) map { activationFunction }
@@ -76,32 +62,39 @@ class FullyConnectedLayer(
     * Takes in the gradient from previous layer, computes the gradient for this layer and return it.
     * This method will also update the weights for this layer for the next iteration of forward propagation.
     *
-    * @param losses These are losses from the previous layer. Previous layer = layer 1 CLOSER to the output layer
-    * @return gradient/losses for this layer.
+    * @param error These are error from the previous layer. Previous layer = layer 1 CLOSER to the output layer
+    * @return gradient/error for this layer.
     */
-  override def backward(losses: DenseVector[Double]): DenseVector[Double] = {
-
+  override def backward(error: DenseVector[Double]): DenseVector[Double] = {
     if (_activations.isEmpty) {
       sys.error("cannot run backward propagation without forward propagation being run for this iteration/layer.")
     }
 
-    // compute loss for this layer. this value will be returned so that next layer of neurons can continue to backward propagate.
-    val delta = (weights.t * losses) :* (_activations.get map { activationFunction.primeAtY })
+    // remember how many examples we've seen so we can correctly update weights in the flushUpdates step.
+    m += 1
 
     // partial derivatives to update the gradient
-    val gradientDeltas = losses * _activations.get.t
-    val biasDeltas = losses
+    val weightGradient = error * _activations.get.t
+    val biasGradient = error
 
     // update the gradients
-    weightGrad += gradientDeltas
-    biasGrad += biasDeltas
+    weightDelta += weightGradient
+    biasDelta += biasGradient
 
+    // compute loss for this layer. this value will be returned so that next layer of neurons can continue to backward propagate.
+    (weights.t * error) :* _activations.get.map(activationFunction.primeAtY)
+  }
+
+  def doUpdate(): Unit = {
     // update the weights based on gradient and regularization
-    weights -= alpha * ((weightGrad / m.toDouble) + (weights * lambda))
+    weights -= alpha * ((weightDelta / m.toDouble) + (lambda * weights))
 
     // update the biases based on gradient
-    biases -= alpha * (biasGrad / m.toDouble)
+     biases -= alpha * (biasDelta / m.toDouble)
 
-    delta
+    // Reset state
+    weightDelta = DenseMatrix.zeros[Double](rows = weights.rows, cols = weights.cols)
+    biasDelta = DenseVector.zeros[Double](biases.length)
+    m = 0
   }
 }

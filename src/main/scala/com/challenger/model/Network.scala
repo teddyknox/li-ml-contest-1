@@ -2,87 +2,78 @@ package com.challenger.model
 
 import java.util.logging.Logger
 
-import breeze.linalg.DenseVector
+import breeze.linalg.{DenseMatrix, DenseVector, norm}
 import com.challenger.data.enums.Label
 import com.challenger.model.function.DifferentiableFunction
 import com.challenger.model.function.DifferentiableFunction._
 import com.challenger.model.layers.FullyConnectedLayer
 
-import scala.util.Random
-
 object Network {
 
   val defaultAlpha = 0.1
 
-  val defaultLambda = 100.0
+  val defaultLambda = 0.1
 
   val logger = Logger.getLogger(getClass.getName)
 
   def apply(
-      featureVectors: Seq[(DenseVector[Double], Label)],
+      inputSize: Int,
       hiddenLayerSizes: Seq[Int] = Seq.empty,
       outputLayerSize: Int = 1,
       activationFunction: DifferentiableFunction[Double, Double] = relu,
       alpha: Double = defaultAlpha,
-      lambda: Double = defaultLambda,
-      initializeOnStart: Boolean = false,
-      epochs: Int = 1): Network = {
+      lambda: Double = defaultLambda): Network = {
     new Network(
-      featureVectors,
+      inputSize,
       hiddenLayerSizes,
       outputLayerSize,
       activationFunction,
       alpha,
-      lambda,
-      initializeOnStart,
-      epochs)
+      lambda)
   }
 }
 
 class Network(
-    featureVectors: Seq[(DenseVector[Double], Label)],
+    inputSize: Int,
     hiddenLayerSizes: Seq[Int],
     outputLayerSize: Int,
     activationFunction: DifferentiableFunction[Double, Double],
     alpha: Double,
-    lambda: Double,
-    initializeOnStart: Boolean,
-    epochs: Int) {
+    lambda: Double) {
 
-  import Network.logger
-
-  private val inputSizes = featureVectors.head._1.size +: hiddenLayerSizes
+  private val inputSizes = inputSize +: hiddenLayerSizes
   private val outputSizes = hiddenLayerSizes :+ outputLayerSize
 
   val layers = inputSizes zip outputSizes map { case (input, output) =>
-    FullyConnectedLayer(input, output, activationFunction, alpha, lambda, featureVectors.size)
+    FullyConnectedLayer(input, output, activationFunction, alpha, lambda)
   }
 
-  if (initializeOnStart) {
-    initialize()
-  }
+  def updateWeights(examples: Seq[Tuple2[DenseVector[Double], Label]]): Double = {
 
-  def initialize(): Unit = 1 to epochs foreach { i =>
-    if (i % 10 == 0) {
-      val mse = calculateMeanSquareError(featureVectors(Random.nextInt(featureVectors.size))._1)
-      logger.info(s"At epoch #$i, mse: $mse")
-    }
-    initializeSingleEpoch()
-  }
+    // FullyConnectedLayer(s) hold state, and update their weights, clear their gradient accumulators
+    // when told to.
 
-  protected def initializeSingleEpoch(): Unit = {
-    featureVectors.zipWithIndex foreach { case ((features, label), i) =>
-
+    val mse = examples.foldLeft(0.0) { case (mseAcc, (features, label)) =>
       // forward propagate and fold activation of each layer into the next one
       val output = layers.foldLeft(features) { case (activations, layer) => layer.forward(activations) }
 
-      // computes the output layer loss
-      val outputLoss = (output - DenseVector(label.value.toDouble)) :* (output map { activationFunction.primeAtY })
+      // computes the output layer error
+      val error = DenseVector(label.value.toDouble) - output
+      val outputError = (-1.0 * error) :* output.map(activationFunction.primeAtY)
 
       // backward propagate and update the weights
       // the result is the "input layer" loss, which can be ignored
-      layers.foldRight(outputLoss) { case (layer, losses) => layer.backward(losses) }
+      layers.foldRight(outputError) { case (layer, error) => layer.backward(error) }
+
+      // keep track of mse
+      mseAcc + (0.5 * (error dot error))
     }
+
+    // update parameters using alpha and lambda regularization
+    layers.foreach(_.doUpdate)
+
+    // return mse for stats
+    mse
   }
 
   def classify(features: DenseVector[Double]): DenseVector[Double] = {
