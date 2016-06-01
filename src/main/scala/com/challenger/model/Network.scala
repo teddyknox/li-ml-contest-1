@@ -48,7 +48,7 @@ class Network(
     FullyConnectedLayer(input, output, activationFunction, alpha, lambda)
   }
 
-  def updateWeights(examples: Seq[Tuple2[DenseVector[Double], Label]]): Double = {
+  def updateWeights(examples: Seq[(DenseVector[Double], Label)]): Double = {
 
     // FullyConnectedLayer(s) hold state, and update their weights, clear their gradient accumulators
     // when told to.
@@ -63,14 +63,14 @@ class Network(
 
       // backward propagate and update the weights
       // the result is the "input layer" loss, which can be ignored
-      layers.foldRight(outputError) { case (layer, error) => layer.backward(error) }
+      layers.foldRight(outputError) { case (layer, err) => layer.backward(err) }
 
       // keep track of mse
       mseAcc + (0.5 * (error dot error))
     }
 
     // update parameters using alpha and lambda regularization
-    layers.foreach(_.doUpdate)
+    layers foreach { _.doUpdate() }
 
     // return mse for stats
     mse

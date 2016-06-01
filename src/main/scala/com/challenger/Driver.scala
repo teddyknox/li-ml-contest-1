@@ -8,8 +8,6 @@ import com.challenger.loader.DataLoader._
 import com.challenger.model.Network
 import com.challenger.model.function._
 
-import scala.util.Random
-
 object Driver extends App {
 
   val logger = Logger.getLogger(getClass.getName)
@@ -60,8 +58,10 @@ object Driver extends App {
     lambda = regularizationParam)
 
   val batches = examples.grouped(batchSize).toVector
-  for (epoch <- (1 to epochs)) {
-    val mse = batches.map(neuralNetwork.updateWeights(_)).reduce(_ + _)
+  for (epoch <- 1 to epochs) {
+    val mse = batches
+      .map { neuralNetwork.updateWeights }
+      .sum
     logger.info(s"Epoch #$epoch, mse: $mse")
   }
 
@@ -69,6 +69,21 @@ object Driver extends App {
   val predictions = testSet map { _.features.vector } map { neuralNetwork.classify } map { output =>
     Label.get(output(0))
   }
+
+  if (testSet.head.labelOpt.nonEmpty) {
+    val actual = testSet flatMap { _.labelOpt }
+
+    if (actual.size != predictions.size) {
+      sys.error("predictions.size != actual.size")
+    } else {
+      val zipped = predictions zip actual
+      val total = zipped.size
+      val correct = zipped count { case (prediction, expected) => prediction == expected }
+      val percentage = correct.toDouble / total.toDouble * 100.0
+      logger.info(f"Got $correct/$total ($percentage%.2f%%) correct.")
+    }
+  }
+
   val output = "{\"guesses\":[" + predictions.map(s => "\"" + s.toString + "\"").mkString(", ") + "]}"
   val outputWriter = new PrintWriter(outputFilePath, "UTF-8")
   try {

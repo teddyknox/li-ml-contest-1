@@ -16,4 +16,5 @@ case class TestSetLine(
   capitalGain: Int,
   capitalLoss: Int,
   hoursPerWeek: Int,
-  nativeCountry: NativeCountry) extends Line
+  nativeCountry: NativeCountry,
+  labelOpt: Option[Label] = None) extends Line

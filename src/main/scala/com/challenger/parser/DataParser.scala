@@ -1,6 +1,5 @@
 package com.challenger.parser
 
-import com.challenger.loader.DataLoader
 import com.challenger.data._
 import com.challenger.data.enums._
 
@@ -42,35 +41,71 @@ trait DataParser {
   }
 
   def parseTestSet(line: String): TestSetLine = {
-    val Array(
-      age,
-      workClass,
-      sampleWeight,
-      education,
-      educationNum,
-      maritalStatus,
-      occupation,
-      relationship,
-      race,
-      sex,
-      capitalGain,
-      capitalLoss,
-      hoursPerWeek,
-      nativeCountry) = line split "\\s+"
-    TestSetLine(
-      age.toInt,
-      WorkClass.valueOf(workClass),
-      sampleWeight.toInt,
-      Education.valueOf(education),
-      educationNum.toInt,
-      MaritalStatus.valueOf(maritalStatus),
-      Occupation.valueOf(occupation),
-      Relationship.valueOf(relationship),
-      Race.valueOf(race),
-      Sex.valueOf(sex),
-      capitalGain.toInt,
-      capitalLoss.toInt,
-      hoursPerWeek.toInt,
-      NativeCountry.valueOf(nativeCountry))
+    line.split("\\s+") match {
+      case arr if arr.size == 14 =>
+        val Array(
+          age,
+          workClass,
+          sampleWeight,
+          education,
+          educationNum,
+          maritalStatus,
+          occupation,
+          relationship,
+          race,
+          sex,
+          capitalGain,
+          capitalLoss,
+          hoursPerWeek,
+          nativeCountry) = arr
+        TestSetLine(
+          age.toInt,
+          WorkClass.valueOf(workClass),
+          sampleWeight.toInt,
+          Education.valueOf(education),
+          educationNum.toInt,
+          MaritalStatus.valueOf(maritalStatus),
+          Occupation.valueOf(occupation),
+          Relationship.valueOf(relationship),
+          Race.valueOf(race),
+          Sex.valueOf(sex),
+          capitalGain.toInt,
+          capitalLoss.toInt,
+          hoursPerWeek.toInt,
+          NativeCountry.valueOf(nativeCountry))
+      case arr if arr.size == 15 =>
+        val Array(
+          age,
+          workClass,
+          sampleWeight,
+          education,
+          educationNum,
+          maritalStatus,
+          occupation,
+          relationship,
+          race,
+          sex,
+          capitalGain,
+          capitalLoss,
+          hoursPerWeek,
+          nativeCountry,
+          label) = arr
+        TestSetLine(
+          age.toInt,
+          WorkClass.valueOf(workClass),
+          sampleWeight.toInt,
+          Education.valueOf(education),
+          educationNum.toInt,
+          MaritalStatus.valueOf(maritalStatus),
+          Occupation.valueOf(occupation),
+          Relationship.valueOf(relationship),
+          Race.valueOf(race),
+          Sex.valueOf(sex),
+          capitalGain.toInt,
+          capitalLoss.toInt,
+          hoursPerWeek.toInt,
+          NativeCountry.valueOf(nativeCountry),
+          Some(Label.valueOf(label)))
+    }
   }
 }
