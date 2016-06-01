@@ -5,6 +5,7 @@ import java.util.logging.Logger
 import breeze.linalg.DenseVector
 import com.challenger.boosting.bagging.BaggingHelper._
 import com.challenger.data.TrainingSetLine
+import com.challenger.model.function.DifferentiableFunction
 import com.challenger.model.{Network, NetworkConfiguration}
 
 object Ensemble {
@@ -62,7 +63,24 @@ class Ensemble(
     nn
   }
 
+  val selectionTrainingSet = trainingSet map { line =>
+    val v = line.features.vector
+    val predictions = networks map { _.classify(v)(0) }
+    DenseVector(predictions.to[Array]) -> line.label
+  }
+
+  val selectionConfig = NetworkConfiguration(
+    ensembleSize,
+    Seq(4, 4),
+    1,
+    DifferentiableFunction.relu,
+    0.01,
+    0.001,
+    30,
+    30)
+  val strategy = LogisticSelection(selectionConfig, selectionTrainingSet)
+
   def classify(features: DenseVector[Double]): DenseVector[Double] = {
-    boostingStrategy(networks map { _.classify(features) })
+    strategy(networks map { _.classify(features) })
   }
 }
