@@ -175,10 +175,10 @@ case class Features(
       workClass ++
       Array(sampleWeight / Maximums.sampleWeight) ++
       education ++
-      Array(educationNum / Maximums.educationNum) ++
+//      Array(educationNum / Maximums.educationNum) ++
       maritalStatus ++
       occupation ++
-      relationship ++
+//      relationship ++
       race ++
       Array(sex) ++
       Array(capitalGain / Maximums.capitalGain) ++
