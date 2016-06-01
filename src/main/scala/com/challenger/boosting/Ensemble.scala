@@ -5,7 +5,10 @@ import java.util.logging.Logger
 import breeze.linalg.DenseVector
 import com.challenger.boosting.bagging.BaggingHelper._
 import com.challenger.data.TrainingSetLine
+import com.challenger.data.enums.Label
 import com.challenger.model.{Network, NetworkConfiguration}
+
+import scala.util.Random
 
 object Ensemble {
 
@@ -45,22 +48,38 @@ class Ensemble(
     sys.error("Bagging fraction has to be (0, 1.0]")
   }
 
-  val trainingSets = if (baggingFraction == 1.0) {
-    Seq.fill(ensembleSize) { trainingSet map { e => e.features.vector -> e.label } }
-  } else {
-    Seq.fill(ensembleSize) { trainingSet map { e => e.features.vector -> e.label } } map { _.sample(math.round(baggingFraction * trainingSet.size).toInt) }
+  val examples1 = trainingSet map { e => e.features.vector -> e.label }
+  val nn1 = Network(networkConfig)
+  val batches1 = examples1.grouped(networkConfig.batchSize).to[Vector]
+  1 to networkConfig.epochs foreach { epoch =>
+    val mse = batches1.map(nn1.updateWeights).sum
+    logger.info(s"Epoch #$epoch; MSE: $mse")
   }
 
-  val networks = trainingSets.zipWithIndex map { case (examples, ensembleIndex) =>
-    logger.info(s"Example size: ${examples.size}")
-    val nn = Network(networkConfig)
-    val batches = examples.grouped(networkConfig.batchSize).to[Vector]
-    1 to networkConfig.epochs foreach { epoch =>
-      val mse = batches.map(nn.updateWeights).sum
-      logger.info(s"Ensemble #$ensembleIndex; Epoch #$epoch; MSE: $mse")
-    }
-    nn
+  val (correct1, incorrect1) = examples1 partition { case (features, label) => Label.get(nn1.classify(features)(0)) == label }
+  val examples2 = correct1.sample((examples1.size.toDouble / 2).floor.toInt) ++
+    incorrect1.sample((examples1.size.toDouble / 2).ceil.toInt)
+  val nn2 = Network(networkConfig)
+  val batches2 = examples2.grouped(networkConfig.batchSize).to[Vector]
+  1 to networkConfig.epochs foreach { epoch =>
+    val mse = batches2.map(nn2.updateWeights).sum
+    logger.info(s"Epoch #$epoch; MSE: $mse")
   }
+
+
+  val (agree, disagree) = examples1 partition { case (features, label) =>
+    val nn1Pred = Label.get(nn1.classify(features)(0))
+    val nn2Pred = Label.get(nn2.classify(features)(0))
+    nn1Pred == nn2Pred
+  }
+  val nn3 = Network(networkConfig)
+  val batches3 = disagree.grouped(networkConfig.batchSize).to[Vector]
+  1 to networkConfig.epochs foreach { epoch =>
+    val mse = batches3.map(nn3.updateWeights).sum
+    logger.info(s"Epoch #$epoch; MSE: $mse")
+  }
+
+  val networks = Seq(nn1, nn2, nn3)
 
   def classify(features: DenseVector[Double]): DenseVector[Double] = {
     boostingStrategy(networks map { _.classify(features) })
