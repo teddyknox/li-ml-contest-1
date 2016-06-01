@@ -23,13 +23,17 @@ object Network {
       activationFunction: DifferentiableFunction[Double, Double] = relu,
       alpha: Double = defaultAlpha,
       lambda: Double = defaultLambda): Network = {
-    new Network(
-      inputSize,
-      hiddenLayerSizes,
-      outputLayerSize,
-      activationFunction,
-      alpha,
-      lambda)
+    new Network(inputSize, hiddenLayerSizes, outputLayerSize, activationFunction, alpha, lambda)
+  }
+
+  def apply(config: NetworkConfiguration): Network = {
+    apply(
+      config.inputSize,
+      config.hiddenLayerSizes,
+      config.outputLayerSize,
+      config.activationFunction,
+      config.alpha,
+      config.lambda)
   }
 }
 

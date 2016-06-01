@@ -3,9 +3,10 @@ package com.challenger
 import java.io.PrintWriter
 import java.util.logging.Logger
 
+import com.challenger.boosting.{BoostingStrategy, Ensemble}
 import com.challenger.data.enums.Label
 import com.challenger.loader.DataLoader._
-import com.challenger.model.Network
+import com.challenger.model.{Network, NetworkConfiguration}
 import com.challenger.model.function._
 
 object Driver extends App {
@@ -42,6 +43,18 @@ object Driver extends App {
     .map { _.toInt }
     .getOrElse { 30 }
 
+  val ensembleSize = Option(System.getProperty("ensemble.size"))
+    .map { _.toInt }
+    .getOrElse { Ensemble.Defaults.ensembleSize }
+
+  val baggingFraction = Option(System.getProperty("bagging.fraction"))
+    .map { _.toDouble }
+    .getOrElse { Ensemble.Defaults.baggingFraction }
+
+  val boostingStrategy = Option(System.getProperty("boosting.strategy"))
+    .map { BoostingStrategy.valueOf }
+    .getOrElse { Ensemble.Defaults.boostingStrategy }
+
   logger.info("Loading training set...")
   val trainingSet = load(trainingPath) { parseTrainingSet }
   val examples = trainingSet.map({ line => line.features.vector -> line.label })
@@ -49,24 +62,24 @@ object Driver extends App {
   logger.info("Loading testing set...")
   val testSet = load(testPath) { parseTestSet }
 
-  logger.info("Initializing neural network...")
-  val neuralNetwork = Network(
-    inputSize = examples(0)._1.length,
-    hiddenLayerSizes = hiddenLayers,
-    activationFunction = activationFunction,
-    alpha = learningRate,
-    lambda = regularizationParam)
-
-  val batches = examples.grouped(batchSize).toVector
-  for (epoch <- 1 to epochs) {
-    val mse = batches
-      .map { neuralNetwork.updateWeights }
-      .sum
-    logger.info(s"Epoch #$epoch, mse: $mse")
-  }
+  logger.info("Initializing ensemble...")
+  val ensemble = Ensemble(
+    ensembleSize = ensembleSize,
+    baggingFraction = baggingFraction,
+    boostingStrategy = boostingStrategy,
+    networkConfig = NetworkConfiguration(
+      inputSize = examples(0)._1.length,
+      hiddenLayerSizes = hiddenLayers,
+      outputLayerSize = 1,
+      activationFunction = activationFunction,
+      alpha = learningRate,
+      lambda = regularizationParam,
+      epochs = epochs,
+      batchSize = batchSize),
+    trainingSet = trainingSet)
 
   logger.info("Classifying test set...")
-  val predictions = testSet map { _.features.vector } map { neuralNetwork.classify } map { output =>
+  val predictions = testSet map { _.features.vector } map { ensemble.classify } map { output =>
     Label.get(output(0))
   }
 

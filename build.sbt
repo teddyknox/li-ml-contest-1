@@ -10,4 +10,8 @@ libraryDependencies ++= Seq(
   "org.scalatest" % "scalatest_2.11" % "2.2.6" % Test
 )
 
+// fork := true
+
+// javaOptions in run += "-Xmx8G"
+
 mainClass in (Compile, run) := Some("com.challenger.Driver")

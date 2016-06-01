@@ -1,4 +1,4 @@
-package com.challenger.bagging
+package com.challenger.boosting.bagging
 
 import scala.util.Random
 
